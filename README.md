@@ -1,116 +1,102 @@
-# TubeBurner 🔥
+# 🔥 TubeBurner
 
-> **Tame your massive YouTube backlog with absolute minimalism.**
+**TubeBurner** is an ultra-minimal, 100% stateless React Native (Expo) utility designed to help you burn through your YouTube backlog and reach **Playlist Zero** by New Year's Eve (December 31st).
 
-TubeBurner is an open-source, mobile-first web app that tracks and burns down runaway YouTube playlists using clean pacing algorithms. Designed with a sleek, 2026-era glassmorphic interface, it stays out of your way while keeping you on target.
-
-**Live Web App:** [https://tubeburner.vercel.app/](https://tubeburner.vercel.app/)
+Instead of storing daily streaks, databases, or historical logs, TubeBurner uses **pure calendar-phase math**. Given only two inputs—your **current video count** and **the number of days left in the year**—it calculates a clean, bite-sized target ceiling to hit by midnight tonight.
 
 ---
 
-## ⚡ Core Philosophy & Architecture
+## ✨ Features
 
-1. **Sleek & Minimalist Design:**
-   Inspired by modern ultra-minimal UI guidelines. Deep blacks, subtle transparency, and absolutely no unnecessary bloat. Just you and your progress.
-2. **Zero Database / Zero Backend Lock-in:**  
-   TubeBurner has no database or external servers. All user configurations and API keys are stored strictly on your local device via client-side storage.
-3. **Official YouTube API v3 Integration:**  
-   Queries playlist sizes in milliseconds using a single quota unit. Features an automatic 60-second client-side cache to protect your daily quota.
-4. **Dual Pacing Engine:**  
-   Choose between daily habits or batch weekend triaging, backed by real-time target year feasibility projections.
+* **🧠 Zero-Memory / Stateless Architecture:** No `AsyncStorage`, no databases, no sign-ups, and no tracking. Your target is a pure mathematical function of `(currentCount, daysAfterTonight)`.
+* **🎯 Clean Multiples-of-5 Checkpoints:** Targets are snapped to clean multiples of `5` (when above 10 videos) and single-digit steps (for the final 10 videos) so your nightly goal always feels structured and achievable.
+* **🔄 Live YouTube Data API v3 Sync:** Connect any Public or Unlisted YouTube playlist to pull your real-time video count with a single tap.
+* **🎛️ Interactive Simulator Mode:** Test and use the tracker manually without an API key, complete with an optional **Advanced Day Simulator** to time-travel and preview how your targets shift as December 31st approaches.
+* **🌑 Minimalist Dark UI:** High-contrast, distraction-free interface built for quick nightly check-ins on iOS, Android, and Web.
 
 ---
 
-## 🎯 The Dual Pacing Engine
+## 🧮 How the Math Works
 
-TubeBurner normalizes time to your **local midnight** (`12:00 AM local time`) so pacing ceilings roll over cleanly every day.
+Most habit or backlog trackers break if you miss a day or forget to log progress. TubeBurner solves this by constructing a dynamic **checkpoint ladder** every time you look at the screen:
 
-### Mode 1: Daily Burn (e.g., 10 videos/day)
-- Calculates a steady daily descending threshold:  
-  `targetCount = Math.max(0, startCount - ((daysElapsed + 1) * burnRate))`
-- At midnight, the required playlist ceiling drops by your daily burn rate.
-
-### Mode 2: Weekly Sprint (e.g., 50 videos/week)
-- Perfect for weekend batchers and triagers:  
-  `targetCount = Math.max(0, startCount - ((weeksElapsed + 1) * burnRate))`
-- Includes a **Daily Mid-Week Pacing Guide** showing where you should be today to maintain an even cadence throughout the 7-day sprint.
-
-### Target Year Feasibility Check
-- TubeBurner projects your exact finish date based on current velocity.
-- If you are on track to finish before December 31 of your target year, you'll see a green celebration badge.
-- If you fall behind, TubeBurner calculates the exact adjusted burn rate required to finish on time.
+1. **Final Countdown (`count <= 10`):** Exact 1-by-1 integer checkpoints anchored to the remaining days in the year.
+2. **Gentle Pace (`count <= 5 × daysLeft`):** Rungs are spaced every `5` videos up to `5 × D`, allowing you to clear your backlog in clean 5-video sessions.
+3. **High-Pace Phase-Shifted Bands (`count > 5 × daysLeft`):**
+   * When your backlog requires watching more than 5 videos per day (e.g., `535` videos with `65` days left $\approx 8.2\text{ videos/day}$), you enter a higher pace band (`m = 2`, `3`, etc.) where the stride is `5 × m`.
+   * Rungs inside each band are phase-shifted by `(daysLeft * 5) % stride`. As the calendar ticks down by 1 day, the entire checkpoint ladder shifts downward automatically—ensuring you never get stuck on yesterday's number, even with zero stored state.
 
 ---
 
-## ⚠️ Important: YouTube Watch Later (`WL`) Limitation
+## 🚀 Getting Started
 
-> **Why you cannot use your default 'Watch Later' playlist directly:**
+### Prerequisites
 
-Google's official YouTube Data API strictly blocks access to the special `WL` (Watch Later) playlist for third-party privacy reasons.
+* [Node.js](https://nodejs.org/) (LTS recommended)
+* [Expo CLI](https://docs.expo.dev/get-started/installation/)
 
-### 💡 10-Second Workaround:
-1. Open YouTube on your browser or mobile app.
-2. Create a new playlist (e.g., **"Burn Queue"** or **"Watch Next"**).
-3. Set visibility to **Unlisted** or **Public**.
-4. In your Watch Later playlist, tap the three dots (`⋮`) or select all videos and choose **"Add all to..." -> "Burn Queue"**.
-5. Paste your playlist link or ID (`PL...`) into TubeBurner's Configuration screen.
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/yourusername/tubeburner.git
+   cd tubeburner
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   # or
+   npx expo install lucide-react-native react-native-svg expo-status-bar
+   ```
+
+3. **Start the Expo development server:**
+   ```bash
+   npx expo start
+   ```
+
+4. **Run the app:**
+   * Press `i` to open in the **iOS Simulator**
+   * Press `a` to open in the **Android Emulator**
+   * Press `w` to open in the **Web Browser**
+   * Or scan the QR code using the **Expo Go** app on your phone.
 
 ---
 
-## 🔑 Getting a Free YouTube Data API v3 Key (2 Minutes)
+## 🔑 Using the YouTube Data API v3 (Optional)
 
-TubeBurner runs directly in your browser and talks directly to Google's API:
+You can use TubeBurner immediately in **Simulator** mode. If you want live syncing with a YouTube playlist:
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2. Create a new project (e.g., "TubeBurner Personal").
-3. In the sidebar, navigate to **APIs & Services > Library**.
-4. Search for **YouTube Data API v3** and click **Enable**.
-5. Navigate to **APIs & Services > Credentials** and click **+ Create Credentials > API Key**.
-6. *(Optional but recommended)* Restrict the key to the YouTube Data API v3.
-7. Copy the key and paste it into TubeBurner's **Settings** screen.
-
-*Note: YouTube provides 10,000 free quota units per day. TubeBurner only uses 1 unit per playlist check and caches responses for 60 seconds.*
+2. Create a project and enable the **YouTube Data API v3**.
+3. Generate an **API Key** under *Credentials*.
+4. Create a **Public** or **Unlisted** playlist on YouTube for your backlog.
+   > **Note:** YouTube's built-in `Watch Later (WL)` playlist is strictly private and inaccessible via public API keys. Move your backlog into a dedicated Unlisted or Public playlist to sync automatically.
+5. In TubeBurner, tap **Source** → **YouTube API**, paste your API Key and Playlist URL/ID, and tap **Apply Source**.
 
 ---
 
-## 💻 Local Development
+## 🛠️ Tech Stack
 
-TubeBurner is built using **Expo SDK 52**, **Expo Router**, **React Native for Web**, and **lucide-react-native**.
-
-### 1. Clone & Install
-```bash
-git clone https://github.com/AMAMazing/TubeBurner.git
-cd TubeBurner
-npm install
-```
-
-### 2. Run Locally in Web Mode
-```bash
-npx expo start --web
-```
-Open your browser at `http://localhost:8081`.
-
-### 3. Build Static Web Distribution
-```bash
-npm run build
-```
-Compiles the static export into the `dist/` directory.
+* **[React Native](https://reactnative.dev/) & [Expo](https://expo.dev/)** — Cross-platform native & web runtime
+* **[TypeScript](https://www.typescriptlang.org/)** — Type-safe stateless calculations and UI
+* **[Lucide React Native](https://lucide.dev/)** — Crisp minimalist iconography
+* **YouTube Data API v3** — Live playlist item count fetching
 
 ---
 
-## 🚀 1-Click Deployment to Vercel
+## 🤝 Contributing
 
-TubeBurner includes a native `vercel.json` configured for Expo Web static routing.
+Contributions, issues, and feature requests are welcome! Because TubeBurner is designed around **strict minimalism and zero state**, please keep PRs focused on clarity, math refinements, or UI polish.
 
-1. Push your repository to GitHub.
-2. Import the project in [Vercel](https://vercel.com).
-3. Vercel will automatically detect `vercel.json`:
-   - **Build Command:** `npx expo export -p web`
-   - **Output Directory:** `dist`
-4. Click **Deploy**.
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/amazing-improvement`)
+3. Commit your changes (`git commit -m 'Add amazing improvement'`)
+4. Push to the branch (`git push origin feature/amazing-improvement`)
+5. Open a Pull Request
 
 ---
 
 ## 📄 License
 
-MIT © TubeBurner Contributors.
+Distributed under the **MIT License**. See `LICENSE` for more information
